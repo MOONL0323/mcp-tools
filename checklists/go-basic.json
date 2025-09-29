@@ -1,0 +1,128 @@
+{
+  "name": "Go Code Standards",
+  "version": "1.0.0",
+  "description": "Go 语言代码规范检查清单，集成官方工具",
+  "author": "Go Team",
+  "items": [
+    {
+      "id": "go-fmt",
+      "name": "Go 格式化检查",
+      "description": "使用 gofmt 检查代码格式",
+      "category": "formatting",
+      "severity": "error",
+      "command": "gofmt -l {file}",
+      "file_types": [".go"],
+      "languages": ["go"]
+    },
+    {
+      "id": "go-vet",
+      "name": "Go 静态分析",
+      "description": "使用 go vet 进行静态分析",
+      "category": "static-analysis",
+      "severity": "error",
+      "command": "go vet {file}",
+      "file_types": [".go"],
+      "languages": ["go"]
+    },
+    {
+      "id": "goimports",
+      "name": "导入包检查",
+      "description": "使用 goimports 检查导入包格式",
+      "category": "imports",
+      "severity": "warning",
+      "command": "goimports -l {file}",
+      "file_types": [".go"],
+      "languages": ["go"]
+    },
+    {
+      "id": "golangci-lint",
+      "name": "综合代码检查",
+      "description": "使用 golangci-lint 进行综合检查",
+      "category": "comprehensive",
+      "severity": "error",
+      "command": "golangci-lint run --out-format=json {file}",
+      "file_types": [".go"],
+      "languages": ["go"]
+    },
+    {
+      "id": "go-mod-tidy",
+      "name": "模块依赖检查",
+      "description": "检查 go.mod 文件的依赖是否整理",
+      "category": "dependencies",
+      "severity": "warning",
+      "command": "go mod tidy -diff",
+      "file_types": ["go.mod"],
+      "languages": ["go"]
+    },
+    {
+      "id": "ineffassign",
+      "name": "无效赋值检查",
+      "description": "使用 ineffassign 检查无效的赋值",
+      "category": "optimization",
+      "severity": "warning",
+      "command": "ineffassign {file}",
+      "file_types": [".go"],
+      "languages": ["go"]
+    },
+    {
+      "id": "misspell",
+      "name": "拼写检查",
+      "description": "使用 misspell 检查英文拼写",
+      "category": "quality",
+      "severity": "info",
+      "command": "misspell {file}",
+      "file_types": [".go"],
+      "languages": ["go"]
+    },
+    {
+      "id": "no-panic",
+      "name": "禁止使用 panic",
+      "description": "生产代码中不建议使用 panic",
+      "category": "best-practice",
+      "severity": "warning",
+      "pattern": "panic\\s*\\(",
+      "file_types": [".go"],
+      "languages": ["go"]
+    },
+    {
+      "id": "error-handling",
+      "name": "错误处理检查",
+      "description": "检查是否正确处理错误",
+      "category": "error-handling",
+      "severity": "error",
+      "pattern": "^\\s*_,\\s*err\\s*:?=",
+      "file_types": [".go"],
+      "languages": ["go"]
+    },
+    {
+      "id": "todo-comments",
+      "name": "TODO 注释检查",
+      "description": "检查代码中的 TODO 注释",
+      "category": "documentation",
+      "severity": "info",
+      "pattern": "//.*TODO",
+      "file_types": [".go"],
+      "languages": ["go"]
+    },
+    {
+      "id": "function-length",
+      "name": "函数长度检查",
+      "description": "检查函数是否过长（超过50行）",
+      "category": "maintainability",
+      "severity": "warning",
+      "pattern": "func\\s+\\w+.*{[\\s\\S]{1000,}",
+      "file_types": [".go"],
+      "languages": ["go"]
+    },
+    {
+      "id": "exported-func-comment",
+      "name": "导出函数注释检查",
+      "description": "检查导出的函数是否有注释",
+      "category": "documentation",
+      "severity": "warning",
+      "pattern": "^func\\s+[A-Z]\\w*\\s*\\([^)]*\\)",
+      "file_types": [".go"],
+      "languages": ["go"]
+    }
+  ]
+}
