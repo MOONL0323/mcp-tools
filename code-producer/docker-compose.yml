@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  code-producer:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - KNOWLEDGE_MAP_URL=http://knowledge-map:3000
+      - KNOWLEDGE_MAP_API_KEY=${KNOWLEDGE_MAP_API_KEY}
+      - PORT=8080
+      - LOG_LEVEL=info
+    depends_on:
+      - knowledge-map
+    networks:
+      - mcp-network
+
+  knowledge-map:
+    build: ../knowledge-map
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge

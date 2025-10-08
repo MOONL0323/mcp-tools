@@ -1,0 +1,96 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Data and Models
+data/vector_store/*.pkl
+data/graphs/*.json
+data/graphs/*.gexf
+data/graphs/*.graphml
+data/models/
+data/uploads/*
+!data/uploads/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Node.js (Frontend)
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Build
+*.egg-info/
+dist/
+build/
+
+# Backup files
+*_backup.*
+*.bak
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Frontend specific
+frontend/dist/
+frontend/build/
+frontend/.cache/
+frontend/node_modules/
+
+# Documentation backups
+README_backup.md
+*_OLD.*
+*_BACKUP.*
