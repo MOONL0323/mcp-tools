@@ -1,0 +1,28 @@
+# AI Context System 测试文档
+
+这是一个用于测试AI Context System的示例文档。
+
+## 功能特性
+
+1. **文档解析**：支持多种格式的文档解析，包括 Markdown、文本、PDF 等格式
+2. **智能分块**：使用 LLM 辅助进行文档的智能分块处理
+3. **实体抽取**：从文档中抽取关键实体和关系
+4. **知识图谱**：构建基于 NetworkX 的知识图谱
+5. **向量检索**：使用 ChromaDB 进行向量化存储和相似度检索
+
+## 技术栈
+
+- **后端**：FastAPI + SQLite + ChromaDB + NetworkX
+- **前端**：React + TypeScript + Ant Design
+- **LLM**：Qwen3-32B + Qwen3-Embedding-8B
+- **存储**：本地文件系统 + SQLite + ChromaDB
+
+## 应用场景
+
+这个系统可以用于：
+- AI Agent 的上下文增强
+- 文档知识库构建
+- 智能问答系统
+- 代码分析和理解
+
+通过Graph RAG技术，系统能够理解文档内容的结构和关系，为AI Agent提供更准确的上下文信息。

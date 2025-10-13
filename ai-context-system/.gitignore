@@ -1,0 +1,67 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build outputs
+dist/
+build/
+.next/
+.nuxt/
+.vite/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+*.log
+logs/
+*.log.*
+
+# Environment variables (keep examples)
+.env
+.env.local
+.env.production
+.env.development
+
+# IDE files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Data files
+uploads/
+*.pkl
+*.csv
+*.json.bak
+graph_data/*.pkl
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Coverage reports
+coverage/
+.coverage
+.nyc_output
+
+# Cache
+.cache/
+.parcel-cache/

@@ -1,0 +1,215 @@
+# 本地开发测试环境配置
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库 (开发环境)
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: ai-context-postgres-dev
+    environment:
+      POSTGRES_DB: ai_context_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/dev-seed.sql:/docker-entrypoint-initdb.d/dev-seed.sql
+    networks:
+      - ai-context-dev
+
+  # Redis 缓存 (开发环境)
+  redis-dev:
+    image: redis:7-alpine
+    container_name: ai-context-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - ai-context-dev
+
+  # ChromaDB 向量数据库 (开发环境)
+  chromadb-dev:
+    image: ghcr.io/chroma-core/chroma:latest
+    container_name: ai-context-chromadb-dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - chromadb_dev_data:/chroma/chroma
+    environment:
+      - CHROMA_HOST=0.0.0.0
+      - CHROMA_PORT=8000
+      - CHROMA_LOG_LEVEL=DEBUG
+      - ANONYMIZED_TELEMETRY=False
+    networks:
+      - ai-context-dev
+
+  # Neo4j 图数据库 (开发环境 - 简化配置)
+  neo4j-dev:
+    image: neo4j:5.15-community
+    container_name: ai-context-neo4j-dev
+    environment:
+      NEO4J_AUTH: neo4j/dev_password
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: "apoc.*"
+      NEO4J_dbms_memory_heap_initial__size: 256m
+      NEO4J_dbms_memory_heap_max__size: 512m
+      NEO4J_dbms_logs_debug_level: INFO
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_dev_data:/data
+      - neo4j_dev_logs:/logs
+    networks:
+      - ai-context-dev
+
+  # MinIO 对象存储 (开发环境)
+  minio-dev:
+    image: minio/minio:latest
+    container_name: ai-context-minio-dev
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: devuser
+      MINIO_ROOT_PASSWORD: devpassword123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_dev_data:/data
+    networks:
+      - ai-context-dev
+
+  # 后端API服务 (开发环境 - 热重载)
+  backend-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: ai-context-backend-dev
+    environment:
+      - DATABASE_URL=postgresql://dev_user:dev_password@postgres-dev:5432/ai_context_dev
+      - REDIS_URL=redis://redis-dev:6379
+      - CHROMADB_URL=http://chromadb-dev:8000
+      - NEO4J_URI=bolt://neo4j-dev:7687
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=dev_password
+      - MINIO_ENDPOINT=minio-dev:9000
+      - MINIO_ACCESS_KEY=devuser
+      - MINIO_SECRET_KEY=devpassword123
+      - LLM_API_KEY=sk-KskGcDMEQWGncNHr6bE2Ee61F22b40F8A1C09c8b150968Ff
+      - LLM_BASE_URL=https://oneapi.sangfor.com/v1
+      - JWT_SECRET=dev-jwt-secret-not-for-production
+      - ENVIRONMENT=development
+      - DEBUG=True
+      - LOG_LEVEL=DEBUG
+    ports:
+      - "8080:8080"
+      - "5678:5678"  # debugpy端口
+    depends_on:
+      - postgres-dev
+      - redis-dev
+      - chromadb-dev
+      - neo4j-dev
+      - minio-dev
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    stdin_open: true
+    tty: true
+    networks:
+      - ai-context-dev
+
+  # 前端Web界面 (开发环境 - 热重载)
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: ai-context-frontend-dev
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:8080/api
+      - REACT_APP_ENVIRONMENT=development
+      - REACT_APP_LOG_LEVEL=debug
+      - CHOKIDAR_USEPOLLING=true
+      - FAST_REFRESH=true
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend-dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+    networks:
+      - ai-context-dev
+
+  # MCP Server (开发环境)
+  mcp-server-dev:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile.dev
+    container_name: ai-context-mcp-dev
+    environment:
+      - BACKEND_URL=http://backend-dev:8080
+      - NODE_ENV=development
+      - DEBUG=mcp:*
+    ports:
+      - "3001:3001"
+      - "9229:9229"  # Node.js debug端口
+    depends_on:
+      - backend-dev
+    volumes:
+      - ./mcp-server:/app
+      - /app/node_modules
+    networks:
+      - ai-context-dev
+
+  # 开发工具 - pgAdmin (数据库管理)
+  pgadmin-dev:
+    image: dpage/pgadmin4:latest
+    container_name: ai-context-pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@dev.local
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres-dev
+    volumes:
+      - pgadmin_dev_data:/var/lib/pgadmin
+    networks:
+      - ai-context-dev
+
+  # 开发工具 - Redis Commander
+  redis-commander-dev:
+    image: rediscommander/redis-commander:latest
+    container_name: ai-context-redis-commander-dev
+    environment:
+      - REDIS_HOSTS=local:redis-dev:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis-dev
+    networks:
+      - ai-context-dev
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+  chromadb_dev_data:
+  neo4j_dev_data:
+  neo4j_dev_logs:
+  minio_dev_data:
+  pgadmin_dev_data:
+
+networks:
+  ai-context-dev:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

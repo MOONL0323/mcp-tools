@@ -1,0 +1,164 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: ai-context-postgres
+    environment:
+      POSTGRES_DB: ai_context
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ai-context-network
+
+  # Redis 缓存和消息队列
+  redis:
+    image: redis:7-alpine
+    container_name: ai-context-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ai-context-network
+
+  # ChromaDB 向量数据库
+  chromadb:
+    image: ghcr.io/chroma-core/chroma:latest
+    container_name: ai-context-chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - chromadb_data:/chroma/chroma
+    environment:
+      - CHROMA_HOST=0.0.0.0
+      - CHROMA_PORT=8000
+      - CHROMA_LOG_LEVEL=INFO
+    networks:
+      - ai-context-network
+
+  # Neo4j 图数据库
+  neo4j:
+    image: neo4j:5.15-community
+    container_name: ai-context-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/password123
+      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
+      NEO4J_dbms_security_procedures_unrestricted: "apoc.*,gds.*"
+      NEO4J_dbms_memory_heap_initial__size: 512m
+      NEO4J_dbms_memory_heap_max__size: 1G
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    networks:
+      - ai-context-network
+
+  # MinIO 对象存储
+  minio:
+    image: minio/minio:latest
+    container_name: ai-context-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - ai-context-network
+
+  # 后端API服务
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ai-context-backend
+    environment:
+      - DATABASE_URL=postgresql://admin:password123@postgres:5432/ai_context
+      - REDIS_URL=redis://redis:6379
+      - CHROMADB_URL=http://chromadb:8000
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=password123
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin123
+      - LLM_API_KEY=sk-KskGcDMEQWGncNHr6bE2Ee61F22b40F8A1C09c8b150968Ff
+      - LLM_BASE_URL=https://oneapi.sangfor.com/v1
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - ENVIRONMENT=development
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+      - chromadb
+      - neo4j
+      - minio
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - ai-context-network
+
+  # 前端Web界面
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: ai-context-frontend
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:8080/api
+      - REACT_APP_ENVIRONMENT=development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - ai-context-network
+
+  # MCP Server
+  mcp-server:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    container_name: ai-context-mcp
+    environment:
+      - BACKEND_URL=http://backend:8080
+      - NODE_ENV=development
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend
+    volumes:
+      - ./mcp-server:/app
+      - /app/node_modules
+    networks:
+      - ai-context-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  chromadb_data:
+  neo4j_data:
+  neo4j_logs:
+  minio_data:
+
+networks:
+  ai-context-network:
+    driver: bridge
