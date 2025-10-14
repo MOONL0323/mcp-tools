@@ -26,6 +26,7 @@ class UserRole(str, enum.Enum):
 class DocumentType(str, enum.Enum):
     BUSINESS_DOC = "business_doc"
     DEMO_CODE = "demo_code"
+    CHECKLIST = "checklist"  # 规范文档：代码规范、流程规范、检查清单等
 
 
 class AccessLevel(str, enum.Enum):

@@ -16,7 +16,7 @@ export class ApiClient {
 
   constructor(config?: AxiosRequestConfig) {
     this.client = axios.create({
-      baseURL: process.env.REACT_APP_API_BASE_URL || '/api',
+      baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api',
       timeout: 10000,
       withCredentials: false, // 修复CORS问题：当后端使用通配符时不能使用withCredentials
       headers: {

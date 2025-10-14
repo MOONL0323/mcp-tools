@@ -26,18 +26,30 @@ export const RegisterPage: React.FC = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const onFinish = async (values: RegisterCredentials) => {
+  const onFinish = async (values: any) => {
     setLoading(true);
     try {
-      const result = await register(values);
+      // 直接调用API
+      const { confirmPassword, ...registerData } = values;
       
-      if (result.success) {
+      const response = await fetch('http://localhost:8080/api/v1/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registerData)
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
         message.success('注册成功！请登录');
         navigate('/login');
       } else {
-        message.error(result.error || '注册失败');
+        message.error(data.detail || '注册失败');
       }
     } catch (error) {
+      console.error('注册错误:', error);
       message.error('注册过程中发生错误');
     } finally {
       setLoading(false);

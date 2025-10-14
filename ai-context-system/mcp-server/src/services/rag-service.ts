@@ -500,4 +500,114 @@ export class RagService {
     
     return '其他模式';
   }
+
+  /**
+   * 查询知识图谱实体
+   */
+  async queryEntity(entityName: string): Promise<any> {
+    try {
+      logger.info('查询实体:', entityName);
+
+      const response = await this.client.get<ApiResponse<any>>(
+        `/api/v1/graph/entity/${encodeURIComponent(entityName)}`
+      );
+
+      if (!response.data.success && !response.data.data) {
+        throw new Error(response.data.message || '查询实体失败');
+      }
+
+      return response.data.data || response.data || {};
+    } catch (error) {
+      logger.error('查询实体失败:', error);
+      throw new Error(`查询实体失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    }
+  }
+
+  /**
+   * 查找相关实体
+   */
+  async findRelatedEntities(entityName: string, depth: number = 2): Promise<any[]> {
+    try {
+      logger.info('查找相关实体:', { entity: entityName, depth });
+
+      const response = await this.client.get<ApiResponse<any>>(
+        `/api/v1/graph/related/${encodeURIComponent(entityName)}?max_depth=${depth}`
+      );
+
+      if (!response.data.success && !response.data.data) {
+        throw new Error(response.data.message || '查找相关实体失败');
+      }
+
+      return response.data.data || [];
+    } catch (error) {
+      logger.error('查找相关实体失败:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 获取文档
+   */
+  async getDocument(documentId: number): Promise<any> {
+    try {
+      logger.info('获取文档:', documentId);
+
+      const response = await this.client.get<ApiResponse<any>>(
+        `/api/v1/documents/${documentId}`
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || '获取文档失败');
+      }
+
+      return response.data.data || response.data;
+    } catch (error) {
+      logger.error('获取文档失败:', error);
+      throw new Error(`获取文档失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    }
+  }
+
+  /**
+   * 从文档提取实体
+   */
+  async extractEntitiesFromDocument(documentId: number): Promise<any> {
+    try {
+      logger.info('从文档提取实体:', documentId);
+
+      const response = await this.client.post<ApiResponse<any>>(
+        `/api/v1/entities/extract-from-document/${documentId}`
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || '提取实体失败');
+      }
+
+      return response.data.data || response.data;
+    } catch (error) {
+      logger.error('从文档提取实体失败:', error);
+      throw new Error(`提取实体失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    }
+  }
+
+  /**
+   * 存储实体到知识图谱
+   */
+  async storeEntitiesToGraph(documentId: number, entities: any): Promise<any> {
+    try {
+      logger.info('存储实体到知识图谱:', documentId);
+
+      const response = await this.client.post<ApiResponse<any>>(
+        '/api/v1/graph/store-from-document/' + documentId
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || '存储实体失败');
+      }
+
+      return response.data.data || response.data;
+    } catch (error) {
+      logger.error('存储实体到知识图谱失败:', error);
+      throw new Error(`存储实体失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    }
+  }
 }

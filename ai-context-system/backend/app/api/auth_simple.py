@@ -45,24 +45,24 @@ async def register(
     db: AsyncSession = Depends(get_db)
 ):
     """用户注册"""
+    # 检查用户名是否已存在
+    existing_user = await get_user_by_username(db, register_request.username)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="用户名已存在"
+        )
+    
+    # 检查邮箱是否已存在
+    result = await db.execute(select(User).where(User.email == register_request.email))
+    existing_email = result.scalar_one_or_none()
+    if existing_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="邮箱已被使用"
+        )
+    
     try:
-        # 检查用户名是否已存在
-        existing_user = await get_user_by_username(db, register_request.username)
-        if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="用户名已存在"
-            )
-        
-        # 检查邮箱是否已存在
-        result = await db.execute(select(User).where(User.email == register_request.email))
-        existing_email = result.scalar_one_or_none()
-        if existing_email:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="邮箱已被使用"
-            )
-        
         # 创建新用户
         hashed_password = get_password_hash(register_request.password)
         new_user = User(
@@ -89,6 +89,7 @@ async def register(
             last_login_at=new_user.last_login_at
         )
     except Exception as e:
+        await db.rollback()
         print(f"注册错误: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -102,26 +103,26 @@ async def login(
     db: AsyncSession = Depends(get_db)
 ):
     """用户登录 - 简化版"""
+    user = await get_user_by_username(db, login_request.username)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="用户名或密码错误"
+        )
+    
+    if not verify_password(login_request.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="用户名或密码错误"
+        )
+    
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="用户账户已被禁用"
+        )
+    
     try:
-        user = await get_user_by_username(db, login_request.username)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="用户名或密码错误"
-            )
-        
-        if not verify_password(login_request.password, user.password_hash):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="用户名或密码错误"
-            )
-        
-        if not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="用户账户已被禁用"
-            )
-        
         # 更新最后登录时间
         from datetime import datetime
         user.last_login_at = datetime.utcnow()
@@ -143,9 +144,8 @@ async def login(
             message="登录成功",
             user=user_info
         )
-    except HTTPException:
-        raise
     except Exception as e:
+        await db.rollback()
         print(f"登录错误: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

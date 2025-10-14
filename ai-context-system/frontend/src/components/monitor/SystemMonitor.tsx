@@ -1,9 +1,13 @@
 /**
- * 系统监控面板
+ * 系统监控面板  
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MonitorService, ServiceStatus, SystemEvent } from '../../services/monitorService';
+import { 
+  MonitorService, 
+  ServiceStatus as MonitorServiceStatus, 
+  SystemEvent as MonitorSystemEvent 
+} from '../../services/monitorService';
 import {
   Card,
   Row,
@@ -50,8 +54,8 @@ interface SystemMetrics {
   responseTime: number;
 }
 
-// 系统事件接口
-interface SystemEvent {
+// 系统事件接口 - 本地定义
+interface LocalSystemEvent {
   id: string;
   timestamp: string;
   level: 'info' | 'warning' | 'error';
@@ -60,10 +64,10 @@ interface SystemEvent {
   details?: string;
 }
 
-// 服务状态接口
-interface ServiceStatus {
+// 服务状态接口 - 本地定义
+interface LocalServiceStatus {
   name: string;
-  status: 'running' | 'stopped' | 'error';
+  status: 'running' | 'stopped' | 'error' | 'warning';  // 添加 'warning' 支持
   uptime: string;
   lastCheck: string;
   url?: string;
@@ -81,14 +85,14 @@ const SystemMonitor: React.FC = () => {
     responseTime: 245
   });
 
-  const [events, setEvents] = useState<SystemEvent[]>([]);
-  const [services, setServices] = useState<ServiceStatus[]>([]);
+  const [events, setEvents] = useState<LocalSystemEvent[]>([]);
+  const [services, setServices] = useState<LocalServiceStatus[]>([]);
   const [realTimeEnabled, setRealTimeEnabled] = useState(true);
   const [chartData, setChartData] = useState<any[]>([]);
   const intervalRef = useRef<NodeJS.Timeout>();
 
   // 模拟服务状态
-  const mockServices: ServiceStatus[] = [
+  const mockServices: LocalServiceStatus[] = [
     {
       name: 'Web服务器',
       status: 'running',
@@ -130,7 +134,7 @@ const SystemMonitor: React.FC = () => {
   ];
 
   // 模拟系统事件
-  const mockEvents: SystemEvent[] = [
+  const mockEvents: LocalSystemEvent[] = [
     {
       id: '1',
       timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
@@ -260,8 +264,17 @@ const SystemMonitor: React.FC = () => {
         MonitorService.getPerformanceHistory(24)
       ]);
       
-      setServices(serviceData);
-      setEvents(eventData);
+      // 转换服务数据为本地类型
+      setServices(serviceData as LocalServiceStatus[]);
+      // 转换事件数据为本地类型
+      setEvents(eventData.map((event: MonitorSystemEvent) => ({
+        id: event.id,
+        timestamp: event.timestamp,
+        level: event.type === 'success' ? 'info' : event.type,  // 映射 success 到 info
+        category: event.service || '系统',
+        message: event.message,
+        details: event.details
+      })));
       setChartData(performanceData);
     } catch (error) {
       console.error('加载监控数据失败:', error);

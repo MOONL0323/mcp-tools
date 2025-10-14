@@ -63,7 +63,7 @@ export class SearchService {
     try {
       console.log('发送高级搜索请求:', request);
       
-      const response = await apiClient.post('/api/v1/search/advanced', request);
+      const response = await apiClient.post('/v1/search/advanced', request);
 
       if (response.data.success) {
         return response.data;
@@ -101,7 +101,7 @@ export class SearchService {
    */
   static async getPopularSearches(): Promise<string[]> {
     try {
-      const response = await apiClient.get('/api/v1/search/popular');
+      const response = await apiClient.get('/v1/search/popular');
       
       if (response.data.success) {
         return response.data.data.searches || [];
@@ -128,7 +128,7 @@ export class SearchService {
    */
   static async getSearchStats(): Promise<any> {
     try {
-      const response = await apiClient.get('/api/v1/search/stats');
+      const response = await apiClient.get('/v1/search/stats');
       
       if (response.data.success) {
         return response.data.data;

@@ -130,6 +130,12 @@ export class ValidatorService {
           enum: ['api_design', 'architecture', 'database_design', 'business_logic'],
           nullable: true
         },
+        component: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 100,
+          nullable: true
+        },
         team: {
           type: 'string',
           minLength: 1,

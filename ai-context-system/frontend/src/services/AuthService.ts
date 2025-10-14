@@ -25,7 +25,7 @@ export class AuthService implements IAuthService {
 
   async login(credentials: LoginCredentials): Promise<AuthResult> {
     try {
-      const response = await this.apiClient.post('/auth/login', credentials);
+      const response = await this.apiClient.post('/v1/auth/login', credentials);
       
       // 后端返回 SimpleLoginResponse: { success: boolean, message: string, user: UserInfo }
       if (response.success && response.data && response.data.success) {
@@ -58,7 +58,7 @@ export class AuthService implements IAuthService {
 
   async register(credentials: RegisterCredentials): Promise<AuthResult> {
     try {
-      const response = await this.apiClient.post('/auth/register', credentials);
+      const response = await this.apiClient.post('/v1/auth/register', credentials);
       
       // 后端注册成功时直接返回 UserInfo 对象
       if (response.success && response.data) {

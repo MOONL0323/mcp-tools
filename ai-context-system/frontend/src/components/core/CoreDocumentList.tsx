@@ -25,7 +25,7 @@ import {
   SearchOutlined,
   TeamOutlined
 } from '@ant-design/icons';
-import { apiClient } from '../../services/api';
+import { api } from '../../services/api';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -69,16 +69,14 @@ const CoreDocumentList: React.FC = () => {
       if (selectedProject) params.append('project', selectedProject);
       if (selectedDocType) params.append('doc_type', selectedDocType);
       
-      const response = await apiClient.get(`/api/v1/documents/list?${params.toString()}`);
+      // 修复: API现在直接返回文档数组
+      const docs = await api.documents.list(Object.fromEntries(params));
+      setDocuments(Array.isArray(docs) ? docs : []);
       
-      if (response.data.success) {
-        setDocuments(response.data.data.documents || []);
-      } else {
-        throw new Error(response.data.error || '加载失败');
-      }
     } catch (error: any) {
       console.error('加载文档列表失败:', error);
       message.error('加载文档列表失败');
+      setDocuments([]);
     } finally {
       setLoading(false);
     }
@@ -99,13 +97,11 @@ const CoreDocumentList: React.FC = () => {
       if (selectedProject) params.append('project', selectedProject);
       if (selectedDocType) params.append('doc_type', selectedDocType);
       
-      const response = await apiClient.get(`/api/v1/documents/search?${params.toString()}`);
+      const response = await api.documents.search(Object.fromEntries(params));
       
-      if (response.data.success) {
-        setDocuments(response.data.data || []);
-      } else {
-        throw new Error(response.data.error || '搜索失败');
-      }
+      // 修复: API现在直接返回文档数组
+      setDocuments(Array.isArray(response) ? response : []);
+      
     } catch (error: any) {
       console.error('搜索失败:', error);
       message.error('搜索失败');
@@ -116,14 +112,11 @@ const CoreDocumentList: React.FC = () => {
 
   const viewDocument = async (id: number) => {
     try {
-      const response = await apiClient.get(`/api/v1/documents/${id}`);
+      // 修复: API现在直接返回文档对象
+      const doc = await api.documents.get(id.toString());
+      setSelectedDocument(doc);
+      setDetailModalVisible(true);
       
-      if (response.data.success) {
-        setSelectedDocument(response.data.data);
-        setDetailModalVisible(true);
-      } else {
-        throw new Error(response.data.error || '获取文档详情失败');
-      }
     } catch (error: any) {
       console.error('获取文档详情失败:', error);
       message.error('获取文档详情失败');
@@ -139,7 +132,7 @@ const CoreDocumentList: React.FC = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          const response = await apiClient.delete(`/api/v1/documents/${id}`);
+          const response = await api.documents.delete(id.toString());
           
           if (response.data.success) {
             message.success('文档删除成功');
@@ -213,7 +206,7 @@ const CoreDocumentList: React.FC = () => {
       render: (tags: string[]) => (
         <Space wrap>
           {tags?.slice(0, 3).map((tag, index) => (
-            <Tag key={index} size="small">{tag}</Tag>
+            <Tag key={index}>{tag}</Tag>
           ))}
           {tags?.length > 3 && <Text type="secondary">+{tags.length - 3}</Text>}
         </Space>
@@ -238,7 +231,7 @@ const CoreDocumentList: React.FC = () => {
     {
       title: '操作',
       key: 'actions',
-      render: (_, record: DocumentItem) => (
+      render: (_: any, record: DocumentItem) => (
         <Space>
           <Button
             type="link"

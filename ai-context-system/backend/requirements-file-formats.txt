@@ -1,0 +1,23 @@
+# 文件格式支持增强依赖
+# 安装命令: pip install -r requirements-file-formats.txt
+
+# PDF解析 (pdfplumber比PyPDF2效果更好)
+pdfplumber>=0.10.0
+PyPDF2>=3.0.0  # 备用方案
+
+# Excel支持
+openpyxl>=3.1.0  # .xlsx
+xlrd>=2.0.1      # .xls (只读)
+
+# CSV和数据处理
+pandas>=2.0.0
+tabulate>=0.9.0  # pandas.to_markdown需要
+
+# 编码检测
+chardet>=5.0.0
+
+# Word文档（已有但确保版本）
+python-docx>=0.8.11
+
+# Markdown处理
+markdown>=3.4.0

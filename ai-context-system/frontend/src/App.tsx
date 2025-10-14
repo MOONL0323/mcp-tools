@@ -3,9 +3,11 @@
  */
 
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
-import { AppRouter } from './router/AppRouter';
+import { AppRoutes } from './routes/AppRoutes';
+import { AuthProvider } from './hooks/useAuth';
 import { DIContainer } from './core/DIContainer';
 import { AuthService } from './services/AuthService';
 import { ApiClient } from './services/ApiClient';
@@ -30,9 +32,13 @@ container.registerSingleton('ClassificationService', () => new SimpleClassificat
 const App: React.FC = () => {
   return (
     <ConfigProvider locale={zhCN}>
-      <div className="App">
-        <AppRouter />
-      </div>
+      <BrowserRouter>
+        <AuthProvider>
+          <div className="App">
+            <AppRoutes />
+          </div>
+        </AuthProvider>
+      </BrowserRouter>
     </ConfigProvider>
   );
 };

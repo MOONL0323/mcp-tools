@@ -130,9 +130,11 @@ async function main(): Promise<void> {
 async function healthCheck(): Promise<boolean> {
   try {
     // 检查后端API连接
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
     const response = await fetch(`${config.backendApiUrl}/health`, {
       method: 'GET',
-      timeout: 5000
+      signal: controller.signal
     });
     
     if (!response.ok) {

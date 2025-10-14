@@ -13,6 +13,7 @@ import {
   NodeIndexOutlined
 } from '@ant-design/icons';
 import { useAuth } from '../../hooks/useAuth';
+import { apiClient } from '../../services/api';
 
 const { Title, Paragraph } = Typography;
 
@@ -49,18 +50,13 @@ export const Dashboard: React.FC = () => {
     try {
       setLoading(true);
       
-      const response = await fetch('/api/v1/stats/dashboard', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        }
-      });
+      const response = await apiClient.get('/v1/stats/dashboard');
       
-      if (!response.ok) {
+      if (response.success && response.data) {
+        setStats(response.data);
+      } else {
         throw new Error('Failed to load dashboard statistics');
       }
-      
-      const data = await response.json();
-      setStats(data);
     } catch (error) {
       console.error('加载统计数据失败:', error);
       message.error('加载统计数据失败');

@@ -40,19 +40,9 @@ export const MainLayout: React.FC = () => {
       label: '仪表板',
     },
     {
-      key: 'documents-group',
+      key: '/documents',
       icon: <FileTextOutlined />,
       label: '文档管理',
-      children: [
-        {
-          key: '/documents',
-          label: 'Mock版本',
-        },
-        {
-          key: '/documents-real',
-          label: '真实API版本',
-        },
-      ],
     },
     {
       key: '/search',

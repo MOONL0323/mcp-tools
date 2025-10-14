@@ -25,7 +25,7 @@ interface Message {
 interface Source {
   id: string;
   title: string;
-  type: 'document' | 'code' | 'api';
+  type: 'document' | 'code' | 'api' | 'knowledge';  // 添加回 'knowledge' 以匹配API
   relevance: number;
   snippet: string;
   url?: string;
@@ -72,7 +72,7 @@ const IntelligentQA: React.FC = () => {
   // AI回答生成
   const generateAIResponse = async (question: string): Promise<Message> => {
     try {
-      setIsLoading(true);
+      setLoading(true);
       
       // 调用智能问答API
       const response = await QAService.askQuestion({
@@ -208,7 +208,7 @@ const IntelligentQA: React.FC = () => {
         thinking: "正在分析您的问题，从知识图谱中检索相关信息..."
       };
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 

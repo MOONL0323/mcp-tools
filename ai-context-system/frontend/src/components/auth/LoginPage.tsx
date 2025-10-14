@@ -32,6 +32,7 @@ export const LoginPage: React.FC = () => {
     setError(null);
 
     try {
+      // 使用 useAuth 的 login 方法，它会自动更新 Context 状态
       const result = await login({
         username: values.username,
         password: values.password
@@ -45,6 +46,7 @@ export const LoginPage: React.FC = () => {
         setError(result.error || '登录失败，请检查用户名和密码');
       }
     } catch (err) {
+      console.error('登录错误:', err);
       setError('网络错误，请稍后重试');
     } finally {
       setLoading(false);

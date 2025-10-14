@@ -187,16 +187,16 @@ class TeamContextMCPServer {
 
         switch (name) {
           case 'search_code_examples':
-            return await this.handleSearchCodeExamples(args as SearchCodeExamplesParams);
+            return await this.handleSearchCodeExamples(args as unknown as SearchCodeExamplesParams);
           
           case 'get_design_docs':
-            return await this.handleGetDesignDocs(args as GetDesignDocsParams);
+            return await this.handleGetDesignDocs(args as unknown as GetDesignDocsParams);
           
           case 'get_coding_standards':
-            return await this.handleGetCodingStandards(args as GetCodingStandardsParams);
+            return await this.handleGetCodingStandards(args as unknown as GetCodingStandardsParams);
           
           case 'query_knowledge_graph':
-            return await this.handleQueryKnowledgeGraph(args as QueryKnowledgeGraphParams);
+            return await this.handleQueryKnowledgeGraph(args as unknown as QueryKnowledgeGraphParams);
           
           default:
             throw new McpError(

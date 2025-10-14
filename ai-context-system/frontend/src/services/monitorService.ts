@@ -46,7 +46,7 @@ export class MonitorService {
     try {
       console.log('获取系统服务状态');
       
-      const response = await apiClient.get('/api/v1/monitor/services');
+      const response = await apiClient.get('/v1/monitor/services');
 
       if (response.data.success) {
         return response.data.data.services || [];
@@ -66,7 +66,7 @@ export class MonitorService {
    */
   static async getSystemMetrics(): Promise<SystemMetrics> {
     try {
-      const response = await apiClient.get('/api/v1/monitor/metrics');
+      const response = await apiClient.get('/v1/monitor/metrics');
 
       if (response.data.success) {
         return response.data.data.metrics;
@@ -126,7 +126,7 @@ export class MonitorService {
    */
   static async restartService(serviceName: string): Promise<boolean> {
     try {
-      const response = await apiClient.post('/api/v1/monitor/services/restart', {
+      const response = await apiClient.post('/v1/monitor/services/restart', {
         service: serviceName
       });
 

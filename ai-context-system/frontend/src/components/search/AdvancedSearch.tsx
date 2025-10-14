@@ -120,7 +120,7 @@ const AdvancedSearch: React.FC = () => {
     try {
       const searchRequest = {
         query,
-        mode: mode === 'exact' ? 'keyword' : mode === 'semantic' ? 'semantic' : 'hybrid',
+        mode: (mode === 'exact' ? 'keyword' : mode === 'semantic' ? 'semantic' : 'hybrid') as 'semantic' | 'keyword' | 'hybrid',
         filters: {
           doc_type: filters.type,
           team: filters.team,
